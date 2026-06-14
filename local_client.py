@@ -22,7 +22,7 @@ client = OpenAI(
     api_key="ollama",  # required by the client, but ignored by Ollama
 )
 
-MODEL = "llama3.2:3b"  # TODO: change to a model you pulled with `ollama pull`
+MODEL = "llama3.2:3b"  # any model you pulled with `ollama pull`
 
 
 def main() -> None:
@@ -35,8 +35,29 @@ def main() -> None:
     )
     print(response.choices[0].message.content)
 
-    # TODO (reflection): in a comment or a print, explain in your own words
-    # why this is "the same shape" as yesterday's hosted Gemini call.
+
+# -----------------------------------------------------------------------------
+# Reflection — why is this "the same shape" as yesterday's hosted Gemini call?
+#
+# Yesterday's hosted call and this local call are the *same request shape*:
+#
+#   1. Both are just HTTP POSTs to a /chat/completions-style endpoint. The only
+#      thing that changed is the `base_url`: Gemini pointed at Google's servers,
+#      this points at http://localhost:11434 — my own laptop. The transport
+#      (HTTP + JSON) is identical.
+#   2. The request body is the same schema: a `model` string and a `messages`
+#      list of {role, content} objects (system / user / assistant). The response
+#      comes back in the same envelope: choices[0].message.content.
+#   3. The exact same `openai` SDK object talks to both. I didn't swap libraries
+#      — I swapped a URL and a (here meaningless) API key. Ollama deliberately
+#      mimics the OpenAI API so existing tooling "just works".
+#
+# The lesson: an LLM is not magic living in a special cloud. It's a process
+# listening on a socket that takes text in and streams tokens out. Hosted vs.
+# self-hosted is only a question of *which machine* runs that process — the
+# contract my code speaks to is the same either way. That's why I can move from
+# a paid hosted API to a free local one by editing one line.
+# -----------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
